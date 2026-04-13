@@ -9,9 +9,10 @@ interface MatchListProps {
 export function MatchList({ matches }: MatchListProps) {
     const containerStyle: React.CSSProperties = {
         display: 'flex',
+        flexWrap: 'wrap',
         flexDirection: 'column',
         gap: '12px',
-        width: '100%'
+
     };
 
     const emptyStateStyle: React.CSSProperties = {
@@ -26,7 +27,7 @@ export function MatchList({ matches }: MatchListProps) {
     if (!matches || matches.length === 0) {
         return (
             <div style={emptyStateStyle}>
-                <h3>No matches available</h3>
+                <h3>Feature not available yet</h3>
                 <p style={{ fontSize: '14px', marginTop: '8px' }}>
                     Check back later for updates.
                 </p>

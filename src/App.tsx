@@ -7,6 +7,9 @@ import { LoadingSpinner } from './Components/Loading';
 import { footballApi } from './football';
 import type { MatchResponse } from './Components/types/types';
 import { AlertCircle, RefreshCw } from 'lucide-react';
+import { io } from 'socket.io-client';
+
+
 
 export default function App() {
   const [Allmatches, setAllmatches] = useState<MatchResponse[]>([]);
@@ -14,7 +17,7 @@ export default function App() {
   const [Premierleague, setPremierleague] = useState<MatchResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'live' | 'all' | 'Premier League' | 'La Liga' | 'Serie A' | 'Bundesliga' | 'Ligue 1' | 'UEFA Champions League' | 'UEFA Europa League'>('live');
+  const [activeTab, setActiveTab] = useState<'live' | 'all' | 'Premier League' | 'La Liga' | 'Serie A' | 'Bundesliga' | 'Ligue 1' | 'UEFA Champions League' | 'UEFA Europa League'>('all');
 
   // Fetch function — used on load AND when refresh is clicked
   const fetchMatches = () => {
@@ -36,6 +39,25 @@ export default function App() {
         setError("Failed to fetch matches");
         setLoading(false);
       });
+
+    const socket = io("http://localhost:3000");
+
+    socket.on("Allmatches", (data) => {
+      console.log("New data:", data);
+      setAllmatches(data);
+    });
+
+    socket.on("livematches", (data) => {
+      console.log("New data:", data);
+      setlivematches(data);
+    });
+
+
+    //  Cleanup
+    return () => {
+      socket.off("Allmatches")
+      socket.off("livematches");
+    };
   };
 
   // Run once when page loads
@@ -47,7 +69,9 @@ export default function App() {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: '16px'
+    marginBottom: '16px',
+    flexWrap: 'wrap',
+    gap: '12px'
   };
 
   const refreshButtonStyle: React.CSSProperties = {
@@ -131,7 +155,7 @@ export default function App() {
       ) : (
         // Shows live or all matches depending on which tab is active
         <MatchList matches={activeTab === 'live' ? livematches : activeTab === 'all' ? Allmatches : Premierleague} />
-      )};
+      )}
 
       <footer style={footerStyle}>
         <p style={{ color: '#555', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 'bold', margin: 0 }}>

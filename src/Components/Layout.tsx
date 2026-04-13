@@ -13,15 +13,17 @@ export function Layout({ children }: LayoutProps) {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    padding: '20px'
+    padding: '16px',
+    boxSizing: 'border-box'
   };
 
   const containerStyle: React.CSSProperties = {
     width: '100%',
-    maxWidth: '800px',
+
     display: 'flex',
     flexDirection: 'column',
-    gap: '20px'
+    gap: '20px',
+    boxSizing: 'border-box'
   };
 
   return (

@@ -30,7 +30,7 @@ export function Header() {
         fontFamily: 'Bebas Neue',
         fontWeight: 'bold',
         margin: 0,
-        color: '#ffffff',
+        color: '#888888',
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'flex-start',
@@ -45,7 +45,7 @@ export function Header() {
     return (
         <header style={headerStyle}>
             <h1 style={titleStyle}>
-                <span>Goal</span><span style={accentStyle}>Stream</span>
+                <span>Goal</span><span style={accentStyle}>Stream</span><span>.</span>
             </h1>
             <p style={subTitle}>Latest Football Scores</p>
         </header>
