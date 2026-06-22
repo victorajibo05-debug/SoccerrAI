@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { getAllmatchesController, getLivematchesController, getMatchDetailsController, getMatchLineupsController, getPremierleagueController } from '../controllers/match.controller'
+import { getAllmatchesController, getLivematchesController } from '../controllers/match.controller'
 
 const router = Router()
 
@@ -7,10 +7,6 @@ router.get("/All", getAllmatchesController);
 
 router.get("/Live", getLivematchesController);
 
-router.get("/Premierleague", getPremierleagueController);
 
-router.get("/Details", getMatchDetailsController);
-
-router.get("/Lineups", getMatchLineupsController);
 
 export default router;

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { CONFIG } from "../config/env"
+import NodeCache from 'node-cache';
 
 const headers = {
     'x-apisports-key': CONFIG.API_KEY,
@@ -7,6 +8,19 @@ const headers = {
 };
 
 const BASE = CONFIG.BASE_URL;
+
+const cache = new NodeCache({ stdTTL: 120 });
+
+async function getCached<T>(key: string, fetchFn: () => Promise<T>): Promise<T> {
+    const cached = cache.get<T>(key);
+    if (cached) {
+        return cached;
+    }
+
+    const fresh = await fetchFn();
+    cache.set(key, fresh);
+    return fresh;
+}
 
 
 const handleError = (error: any, message: string) => {
@@ -19,54 +33,23 @@ const handleError = (error: any, message: string) => {
 export const getAllmatches = async () => {
     try {
         const today = new Date().toISOString().split('T')[0];
-        const response = await axios.get<any>(`${BASE}/fixtures?date=${today}`, { headers }
-        );
-        return response.data;
+        return await getCached(`all-matches-${today}`, async () => {
+            const response = await axios.get<any>(`${BASE}/fixtures?date=${today}`, { headers });
+            return response.data;
+        });
     } catch (error) {
         handleError(error, 'Failed to fetch matches');
     }
-
 };
+
 export const getLivematches = async () => {
     try {
-        const response = await axios.get<any>(`${BASE}/fixtures?live=all`, { headers }
-
-        );
-        return response.data;
+        return await getCached('live-matches', async () => {
+            const response = await axios.get<any>(`${BASE}/fixtures?live=all`, { headers });
+            return response.data;
+        });
     } catch (error) {
         handleError(error, 'Failed to fetch live matches');
     }
 };
 
-export const getPremierleague = async (leagueId: any, season: any) => {
-    try {
-        const response = await axios.get<any>(`${BASE}/fixtures?league=${leagueId}&season=${season}`, { headers }
-
-        );
-        return response.data;
-    } catch (error) {
-        handleError(error, 'Failed to matches');
-    }
-};
-
-export const getMatchDetails = async (matchId: any) => {
-    try {
-        const response = await axios.get<any>(`${BASE}/fixtures/statistics?fixture=${matchId}`, { headers }
-
-        );
-        return response.data;
-    } catch (error) {
-        handleError(error, 'Failed to fetch match details');
-    }
-};
-
-export const getMatchLineups = async (matchId: any) => {
-    try {
-        const response = await axios.get<any>(`${BASE}/fixtures/lineups?fixture=${matchId}`, { headers }
-
-        );
-        return response.data;
-    } catch (error) {
-        handleError(error, 'Failed to fetch match lineups');
-    }
-};
