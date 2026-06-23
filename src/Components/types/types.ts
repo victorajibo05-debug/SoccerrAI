@@ -1,80 +1,66 @@
-export interface Fixture {
-    id: number;
-    referee: string | null;
-    timezone: string;
-    date: string;
-    timestamp: number;
-    periods: {
-      first: number | null;
-      second: number | null;
-    };
-    venue: {
-      id: number | null;
-      name: string | null;
-      city: string | null;
-    };
-    status: {
-      long: string;
-      short: string;
-      elapsed: number | null;
-    };
-  }
-
-  export interface Prediction {
+export interface Prediction {
   home_win: number;
   draw: number;
   away_win: number;
   confidence: "high" | "medium" | "low";
   value_bet: string | null;
 }
-  
-  export interface Team {
-    id: number;
-    name: string;
-    logo: string;
-    winner: boolean | null;
-  }
-  
-  export interface Goals {
-    home: number | null;
-    away: number | null;
-  }
-  
-  export interface League {
-    id: number;
-    name: string;
-    country: string;
-    logo: string;
-    flag: string | null;
-    season: number;
-    round: string;
-  }
-  
-  export interface MatchResponse {
-    fixture: Fixture;
-    league: League;
-    teams: {
-      home: Team;
-      away: Team;
-    };
-    goals: Goals;
-    score: {
-      halftime: Goals;
-      fulltime: Goals;
-      extratime: Goals;
-      penalty: Goals;
-    };
-  }
-  
-  export interface ApiResponse {
-    get: string;
-    parameters: any;
-    errors: any[];
-    results: number;
-    paging: {
-      current: number;
-      total: number;
-    };
-    response: MatchResponse[];
-  }
-  
+
+export interface Area {
+  id: number;
+  name: string;
+  flag: string | null;
+}
+
+export interface Competition {
+  id: number;
+  name: string;
+  emblem: string | null;
+}
+
+export interface MatchTeam {
+  id: number;
+  name: string;
+  crest: string | null;
+}
+
+export interface ScoreDetail {
+  home: number | null;
+  away: number | null;
+}
+
+export interface Score {
+  winner: "HOME_TEAM" | "AWAY_TEAM" | "DRAW" | null;
+  duration: string;
+  fullTime: ScoreDetail;
+  halfTime: ScoreDetail;
+}
+
+export type MatchStatus =
+  | "SCHEDULED"
+  | "TIMED"
+  | "IN_PLAY"
+  | "PAUSED"
+  | "FINISHED"
+  | "POSTPONED"
+  | "SUSPENDED"
+  | "CANCELLED";
+
+export interface MatchResponse {
+  id: number;
+  utcDate: string;
+  status: MatchStatus;
+  minute: number | null;
+  area: Area;
+  competition: Competition;
+  homeTeam: MatchTeam;
+  awayTeam: MatchTeam;
+  score: Score;
+}
+
+export interface ApiResponse {
+  count: number;
+  filters: any;
+  matches: MatchResponse[];
+}
+ 

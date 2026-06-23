@@ -1,15 +1,22 @@
 import axios from 'axios';
-import { CONFIG } from "../config/env"
 import NodeCache from 'node-cache';
+import { CONFIG } from "../config/env"
 
 const headers = {
-    'x-apisports-key': CONFIG.API_KEY,
-    'x-apisports-host': CONFIG.API_HOST,
+    'X-Auth-Token': CONFIG.API_KEY,
 };
 
-const BASE = CONFIG.BASE_URL;
+const BASE = 'https://api.football-data.org/v4';
 
+// Cache responses for 2 minutes to stay well under the 10 requests/minute limit
 const cache = new NodeCache({ stdTTL: 120 });
+
+const handleError = (error: any, message: string) => {
+    if (error.response) {
+        throw new Error(`API Error: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
+    }
+    throw new Error(message);
+};
 
 async function getCached<T>(key: string, fetchFn: () => Promise<T>): Promise<T> {
     const cached = cache.get<T>(key);
@@ -22,19 +29,17 @@ async function getCached<T>(key: string, fetchFn: () => Promise<T>): Promise<T> 
     return fresh;
 }
 
-
-const handleError = (error: any, message: string) => {
-    if (error.response) {
-        throw new Error(`API Error: ${error.response.status} - ${error.response.data}`);
-    }
-    throw new Error(message);
-};
-
 export const getAllmatches = async () => {
     try {
-        const today = new Date().toISOString().split('T')[0];
-        return await getCached(`all-matches-${today}`, async () => {
-            const response = await axios.get<any>(`${BASE}/fixtures?date=${today}`, { headers });
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(today.getDate() + 5);
+
+        const dateFrom = today.toISOString().split('T')[0];
+        const dateTo = tomorrow.toISOString().split('T')[0];
+
+        return await getCached(`all-matches-${dateFrom}`, async () => {
+            const response = await axios.get<any>(`${BASE}/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`, { headers });
             return response.data;
         });
     } catch (error) {
@@ -45,7 +50,7 @@ export const getAllmatches = async () => {
 export const getLivematches = async () => {
     try {
         return await getCached('live-matches', async () => {
-            const response = await axios.get<any>(`${BASE}/fixtures?live=all`, { headers });
+            const response = await axios.get<any>(`${BASE}/matches?status=LIVE`, { headers });
             return response.data;
         });
     } catch (error) {
@@ -53,3 +58,24 @@ export const getLivematches = async () => {
     }
 };
 
+export const getPremierleague = async (competitionCode: string = 'PL') => {
+    try {
+        return await getCached(`competition-${competitionCode}`, async () => {
+            const response = await axios.get<any>(`${BASE}/competitions/${competitionCode}/matches`, { headers });
+            return response.data;
+        });
+    } catch (error) {
+        handleError(error, 'Failed to fetch competition matches');
+    }
+};
+
+export const getMatchDetails = async (matchId: any) => {
+    try {
+        return await getCached(`match-details-${matchId}`, async () => {
+            const response = await axios.get<any>(`${BASE}/matches/${matchId}`, { headers });
+            return response.data;
+        });
+    } catch (error) {
+        handleError(error, 'Failed to fetch match details');
+    }
+};

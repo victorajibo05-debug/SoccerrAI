@@ -15,19 +15,19 @@ export function MatchList({ matches }: MatchListProps) {
 
 useEffect(() => {
   matches.forEach(async (match) => {
-    const key = match.fixture.id; // or whatever uniquely identifies a match
+    const key = match.id; //  whatever uniquely identifies a matchor
     const result = await fetchPrediction(
-      match.teams.home.name,
-      match.teams.away.name,
-      match.fixture.date
+      match.homeTeam.name,
+      match.awayTeam.name,
+      match.utcDate
     );
     setPredictions((prev) => ({ ...prev, [key]: result }));
   });
 }, [matches]);
 
-// Sort matches by league name
+// Sort matches by competition name
 const sortedMatches = [...matches].sort((a, b) =>
-        a.league.name.localeCompare(b.league.name)
+        a.competition.name.localeCompare(b.competition.name)
     );
 
     const containerStyle: React.CSSProperties = {
@@ -62,9 +62,9 @@ const sortedMatches = [...matches].sort((a, b) =>
         <div style={containerStyle}>
             {sortedMatches.map((match) => (
                 <MatchCard
-                    key={match.fixture.id}
+                    key={match.id}
                     match={match}
-                    prediction={predictions[match.fixture.id]}
+                    prediction={predictions[match.id]}
                 />
             ))}
         </div>

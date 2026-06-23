@@ -16,7 +16,7 @@ export default function App() {
   const [livematches, setlivematches] = useState<MatchResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'live' | 'all' | 'World Cup' | 'Premier League' | 'La Liga' | 'Serie A' | 'Bundesliga' | 'Ligue 1' | 'UEFA Champions League' | 'UEFA Europa League'>('all');
+  const [activeTab, setActiveTab] = useState<'live' | 'all' | 'FIFA World Cup' | 'Premier League' | 'La Liga' | 'Serie A' | 'Bundesliga' | 'Ligue 1' | 'UEFA Champions League' | 'UEFA Europa League'>('all');
 
   const fetchMatches = () => {
     setLoading(true);
@@ -27,8 +27,8 @@ export default function App() {
       footballApi.getLivematches()
     ])
       .then(([allRes, liveRes]) => {
-        setAllmatches(allRes.data.response);
-        setlivematches(liveRes.data.response);
+        setAllmatches(allRes.data.matches);
+        setlivematches(liveRes.data.matches);
         setLoading(false);
       })
       .catch(() => {
@@ -46,7 +46,7 @@ export default function App() {
       ? livematches
       : activeTab === 'all'
       ? Allmatches
-      : Allmatches.filter((match) => match.league.name === activeTab);
+      : Allmatches.filter((match) => match.competition.name === activeTab);
 
   const controlBarStyle: React.CSSProperties = {
     display: 'flex',
@@ -142,7 +142,7 @@ export default function App() {
 
       <footer style={footerStyle}>
         <p style={{ color: '#555', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 'bold', margin: 0 }}>
-          Powered by API-Football • Updated Real-time
+          All rights reserved. SoccerrAI © 2026
         </p>
       </footer>
     </Layout>

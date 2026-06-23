@@ -16,11 +16,7 @@ export function MatchCard({ match, prediction }: MatchCardProps) {
     const [analysis, setAnalysis] = useState<string | null>(null);
     const [loadingAnalysis, setLoadingAnalysis] = useState(false);
 
-    const isLive = match.fixture.status.short === '1H' ||
-        match.fixture.status.short === '2H' ||
-        match.fixture.status.short === 'HT' ||
-        match.fixture.status.short === 'ET' ||
-        match.fixture.status.short === 'P';
+    const isLive = match.status === 'IN_PLAY' || match.status === 'PAUSED';
 
     const handleCardClick = async () => {
         setIsExpanded(!isExpanded);
@@ -29,8 +25,8 @@ export function MatchCard({ match, prediction }: MatchCardProps) {
             setLoadingAnalysis(true);
             try {
                 const result = await fetchMarketAnalysis(
-                    match.teams.home.name,
-                    match.teams.away.name
+                    match.homeTeam.name,
+                    match.awayTeam.name
                 );
                 setAnalysis(result);
             } catch (err) {
@@ -136,7 +132,7 @@ export function MatchCard({ match, prediction }: MatchCardProps) {
     return (
         <div style={cardStyle} onClick={handleCardClick}>
             <div style={headerStyle}>
-                <span>{match.league.name} • {match.league.country}</span>
+                <span>{match.competition.name} • {match.area.name}</span>
                 {isLive ? (
                     <span style={liveBadgeStyle}>
                         <span style={{
@@ -146,33 +142,37 @@ export function MatchCard({ match, prediction }: MatchCardProps) {
                             borderRadius: '50%',
                             display: 'inline-block'
                         }} />
-                        {match.fixture.status.elapsed}'
+                        {match.minute !== null ? `${match.minute}'` : 'LIVE'}
                     </span>
                 ) : (
-                    <span>{match.fixture.status.short}</span>
+                    <span>{match.status}</span>
                 )}
+            </div>
+
+            <div style={{ fontFamily: 'Bebas Neue', fontSize: '15px', color: '#ffffff', fontWeight: 'bold', alignContent: "flex-end" }}>
+                {match.utcDate ? new Date(match.utcDate).toLocaleString() : 'Date not available'}
             </div>
 
             <div style={teamsContainerStyle}>
                 {/* Home Team */}
                 <div style={teamRowStyle}>
                     <div style={teamInfoStyle}>
-                        <img src={match.teams.home.logo} alt={match.teams.home.name} style={logoStyle} />
-                        <span>{match.teams.home.name}</span>
+                        <img src={match.homeTeam.crest ?? undefined} alt={match.homeTeam.name} style={logoStyle} />
+                        <span>{match.homeTeam.name}</span>
                     </div>
                     <span style={scoreStyle}>
-                        {match.goals.home !== null ? match.goals.home : '-'}
+                        {match.score.fullTime.home !== null ? match.score.fullTime.home : '-'}
                     </span>
                 </div>
 
                 {/* Away Team */}
                 <div style={teamRowStyle}>
                     <div style={teamInfoStyle}>
-                        <img src={match.teams.away.logo} alt={match.teams.away.name} style={logoStyle} />
-                        <span>{match.teams.away.name}</span>
+                        <img src={match.awayTeam.crest ?? undefined} alt={match.awayTeam.name} style={logoStyle} />
+                        <span>{match.awayTeam.name}</span>
                     </div>
                     <span style={scoreStyle}>
-                        {match.goals.away !== null ? match.goals.away : '-'}
+                        {match.score.fullTime.away !== null ? match.score.fullTime.away : '-'}
                     </span>
                 </div>
             </div>
