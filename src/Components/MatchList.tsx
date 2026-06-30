@@ -50,7 +50,7 @@ const sortedMatches = [...matches].sort((a, b) =>
     if (!matches || matches.length === 0) {
         return (
             <div style={emptyStateStyle}>
-                <h3>Feature not available yet</h3>
+                <h3>No matches for this day</h3>
                 <p style={{ fontSize: '14px', marginTop: '8px' }}>
                     Check back later for updates.
                 </p>
