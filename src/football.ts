@@ -8,3 +8,9 @@ const api = axios.create({
 
 export const getMatchesByDate = (date: string) =>
     api.get(`/ByDate`, { params: { date } });
+
+export const getAllTeams = () =>
+    api.get('/Teams');
+
+export const getTeamMatches = (teamId: number) =>
+    api.get(`/Teams/${teamId}/Matches`);

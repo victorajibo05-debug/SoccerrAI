@@ -11,6 +11,9 @@ import { supabase } from './lib/supabaseClient';
 import {Auth} from './Components/auth';
 import { DateSlider } from './Components/dateslider';
 import type { Session } from '@supabase/supabase-js';
+import { SearchBar } from './Components/searchbar';
+import { SearchResults } from './Components/searchresults';
+
 
 
 
@@ -23,7 +26,12 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'live' | 'all' | 'FIFA World Cup' | 'Premier League' | 'La Liga' | 'Serie A' | 'Bundesliga' | 'Ligue 1' | 'Eredivisie' |  'Campeonato Brasileiro Série A' | 'UEFA Champions League' | 'UEFA Europa League'>('all');
   const [session, setSession] = useState<Session | null>(null);
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
-  
+  const [selectedTeam, setSelectedTeam] = useState<{
+    id: number;
+    name: string;
+    crest: string | null;
+    competition: string;
+} | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -62,8 +70,11 @@ export default function App() {
       ? livematches
       : activeTab === 'all'
       ? Allmatches
-      : Allmatches.filter((matches) => matches.competition.name === activeTab);
-      
+      : Allmatches.filter((matches) => matches.competition.name === activeTab)
+       
+    
+  
+ 
 
   const controlBarStyle: React.CSSProperties = {
     display: 'flex',
@@ -153,10 +164,13 @@ export default function App() {
         </button>
       </div>
 
-      <DateSlider selectedDate={selectedDate} onDateChange={handleDateChange} daysCount={100} />
+     
+
+      <DateSlider selectedDate={selectedDate} onDateChange={handleDateChange} daysCount={150} />
 
       <div style={controlBarStyle}>
         <Tabs activeTab={activeTab} onTabChange={setActiveTab} />
+         <SearchBar onSelectTeam={(team) => setSelectedTeam(team)} />
         <button
           onClick={() => getMatchesByDate(selectedDate)}
           disabled={loading}
@@ -197,9 +211,15 @@ export default function App() {
         </div>
       ) : loading ? (
         <LoadingSpinner />
-      ) : (
-        <MatchList matches={displayedMatches} />
-      )}
+      ) : selectedTeam ? (
+    <SearchResults
+        team={selectedTeam}
+        onBack={() => setSelectedTeam(null)}
+    />
+) : (
+    <MatchList matches={displayedMatches} />
+)}
+      
 
       <footer style={footerStyle}>
         <p style={{ color: '#555', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 'bold', margin: 0 }}>

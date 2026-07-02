@@ -10,6 +10,8 @@ interface MatchListProps {
 
 export function MatchList({ matches }: MatchListProps) {
     const [predictions, setPredictions] = useState<Record<string, Prediction>>({});
+    
+
 
     
 

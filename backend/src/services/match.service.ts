@@ -18,14 +18,13 @@ const handleError = (error: any, message: string) => {
     throw new Error(message);
 };
 
-async function getCached<T>(key: string, fetchFn: () => Promise<T>): Promise<T> {
+async function getCached<T>(key: string, fetchFn: () => Promise<T>, ttl: number = 120): Promise<T> {
     const cached = cache.get<T>(key);
     if (cached) {
         return cached;
     }
-
     const fresh = await fetchFn();
-    cache.set(key, fresh);
+    cache.set(key, fresh, ttl);
     return fresh;
 }
 
@@ -96,3 +95,62 @@ export const getMatchesbydate = async (date: string) => {
     }
 
 }
+
+
+// Competition codes for all 12 free-tier competitions
+const FREE_COMPETITIONS = ['PL', 'PD', 'BL1', 'SA', 'FL1', 'CL', 'ELC', 'DED', 'PPL', 'BSA', 'WC', 'EC'];
+
+export const getAllTeams = async () => {
+    try {
+        return await getCached('all-teams', async () => {
+            const requests = FREE_COMPETITIONS.map((code) =>
+                axios.get<any>(`${BASE}/competitions/${code}/teams`, { headers })
+                    .then((res) => ({
+                        competition: code,
+                        teams: res.data.teams || [],
+                    }))
+                    .catch(() => ({ competition: code, teams: [] }))
+            );
+
+            const results = await Promise.all(requests);
+
+            const teams: any[] = [];
+            results.forEach(({ competition, teams: competitionTeams }) => {
+                competitionTeams.forEach((team: any) => {
+                    if (!teams.find((t) => t.id === team.id)) {
+                        teams.push({
+                            id: team.id,
+                            name: team.name,
+                            shortName: team.shortName,
+                            crest: team.crest,
+                            competition,
+                        });
+                    }
+                });
+            });
+
+            return teams;
+        }, 3600);
+    } catch (error) {
+        handleError(error, 'Failed to fetch teams');
+    }
+};
+
+export const getTeamMatches = async (teamId: string) => {
+    try {
+        return await getCached(`team-matches-${teamId}`, async () => {
+            const today = new Date().toISOString().split('T')[0];
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 60);
+            const futureDateStr = futureDate.toISOString().split('T')[0];
+
+            const response = await axios.get<any>(
+                `${BASE}/teams/${teamId}/matches?dateFrom=${today}&dateTo=${futureDateStr}&status=SCHEDULED,TIMED,IN_PLAY`,
+                { headers }
+            );
+            return response.data;
+        }, 300);
+    } catch (error) {
+        handleError(error, 'Failed to fetch team matches');
+    }
+};
