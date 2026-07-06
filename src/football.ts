@@ -14,3 +14,6 @@ export const getAllTeams = () =>
 
 export const getTeamMatches = (teamId: number) =>
     api.get(`/Teams/${teamId}/Matches`);
+
+export const getCompetitionMatches = (competition: string) =>
+    api.get(`/Competition/${competition}`);

@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { getAllmatches, getLivematches, getMatchesbydate, getAllTeams, getTeamMatches } from '../services/match.service';
+import { getAllmatches, getLivematches, getMatchesbydate, getAllTeams, getTeamMatches, getCompetition } from '../services/match.service';
 
 export const getAllmatchesController = async (req: Request, res: Response) => {
     try {
@@ -44,6 +44,19 @@ export const getTeamMatchesController = async (req: Request, res: Response) => {
             return res.status(400).json({ error: 'teamId is required' });
         }
         const data = await getTeamMatches(teamId as any);
+        res.json(data);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch team matches' });
+    }
+};
+
+export const getCompetitionController = async (req: Request, res: Response) => {
+    try {
+        const { competition } = req.params;
+        if (!competition) {
+            return res.status(400).json({ error: 'competition is required' });
+        }
+        const data = await getCompetition(competition as any);    
         res.json(data);
     } catch (error) {
         res.status(500).json({ error: 'Failed to fetch team matches' });

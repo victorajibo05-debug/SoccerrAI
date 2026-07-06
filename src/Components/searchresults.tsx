@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getTeamMatches } from '../football';
+import { getTeamMatches, getCompetitionMatches } from '../football';
 import { MatchCard } from './MatchCard';
 import type { MatchResponse } from './types/types';
 
@@ -10,12 +10,23 @@ interface Team {
     competition: string;
 }
 
+interface Competition {
+    id: number;
+    code: string;
+    name: string;
+    emblem: string | null;
+}
+
+type SearchResult =
+    | { type: 'team'; team: Team }
+    | { type: 'competition'; competition: Competition };
+
 interface SearchResultsProps {
-    team: Team;
+    result: SearchResult;
     onBack: () => void;
 }
 
-export function SearchResults({ team, onBack }: SearchResultsProps) {
+export function SearchResults({ result, onBack }: SearchResultsProps) {
     const [matches, setMatches] = useState<MatchResponse[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -23,16 +34,23 @@ export function SearchResults({ team, onBack }: SearchResultsProps) {
     useEffect(() => {
         setLoading(true);
         setError(null);
-        getTeamMatches(team.id)
+
+        const fetchPromise =
+            result.type === 'team'
+                ? getTeamMatches(result.team.id)
+                : getCompetitionMatches(result.competition.code);
+
+        fetchPromise
             .then((res) => {
                 setMatches(res.data.matches || []);
                 setLoading(false);
             })
             .catch(() => {
-                setError('Failed to load matches for this team.');
+                const label = result.type === 'team' ? 'team' : 'competition';
+                setError(`Failed to load matches for this ${label}.`);
                 setLoading(false);
             });
-    }, [team.id]);
+    }, [result]);
 
     const headerStyle: React.CSSProperties = {
         display: 'flex',
@@ -52,7 +70,7 @@ export function SearchResults({ team, onBack }: SearchResultsProps) {
         fontSize: '13px',
     };
 
-    const teamNameStyle: React.CSSProperties = {
+    const titleStyle: React.CSSProperties = {
         fontFamily: 'Bebas Neue',
         fontSize: '22px',
         color: '#ffffff',
@@ -68,21 +86,26 @@ export function SearchResults({ team, onBack }: SearchResultsProps) {
         fontFamily: 'Bebas Neue',
     };
 
+    const isTeam = result.type === 'team';
+    const name = isTeam ? result.team.name : result.competition.name;
+    const icon = isTeam ? result.team.crest : result.competition.emblem;
+    const label = isTeam ? 'Upcoming' : 'Fixtures';
+
     return (
         <div>
             <div style={headerStyle}>
                 <button style={backButtonStyle} onClick={onBack}>
                     ← Back
                 </button>
-                {team.crest && (
+                {icon && (
                     <img
-                        src={team.crest}
-                        alt={team.name}
+                        src={icon}
+                        alt={name}
                         style={{ width: '32px', height: '32px', objectFit: 'contain' }}
                     />
                 )}
-                <span style={teamNameStyle}>
-                    Upcoming: {team.name}
+                <span style={titleStyle}>
+                    {label}: {name}
                 </span>
             </div>
 
@@ -91,7 +114,9 @@ export function SearchResults({ team, onBack }: SearchResultsProps) {
             ) : error ? (
                 <div style={{ ...emptyStyle, color: '#ef4444' }}>{error}</div>
             ) : matches.length === 0 ? (
-                <div style={emptyStyle}>No upcoming matches found for {team.name}.</div>
+                <div style={emptyStyle}>
+                    No upcoming matches found for {name}.
+                </div>
             ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {matches.map((match) => (

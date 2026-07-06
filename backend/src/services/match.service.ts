@@ -141,7 +141,7 @@ export const getTeamMatches = async (teamId: string) => {
         return await getCached(`team-matches-${teamId}`, async () => {
             const today = new Date().toISOString().split('T')[0];
             const futureDate = new Date();
-            futureDate.setDate(futureDate.getDate() + 60);
+            futureDate.setDate(futureDate.getDate() + 150);
             const futureDateStr = futureDate.toISOString().split('T')[0];
 
             const response = await axios.get<any>(
@@ -154,3 +154,20 @@ export const getTeamMatches = async (teamId: string) => {
         handleError(error, 'Failed to fetch team matches');
     }
 };
+
+export const getCompetition = async (competitions: string) => {
+    try {
+        return await getCached(`competition-${competitions}`, async () => {
+             const today = new Date().toISOString().split('T')[0];
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 150);
+            const futureDateStr = futureDate.toISOString().split('T')[0];
+
+            const response = await axios.get<any>(`${BASE}/competitions/?dateFrom=${today}&dateTo=${futureDateStr}`, { headers });
+            return response.data;
+        }, 3600);
+    } catch (error) {
+        handleError(error, 'Failed to fetch competition');
+    }
+
+}
