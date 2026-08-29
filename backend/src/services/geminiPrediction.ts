@@ -10,7 +10,7 @@ export async function getMarketAnalysis(homeTeam: string, awayTeam: string): Pro
   Format your response as exactly 4 lines, one market per line, with no numbering, bullets, or extra text. Each line should follow this pattern: Market Name: reason. Then give the most advisble market for that game in this pattern, BEST MARKET: reason`
 
   const response = await axios.post(GROQ_URL, {
-   model: "llama-3.3-70b-versatile",
+   model: "qwen/qwen3.8-27b",
     messages: [{ role: "user", content: prompt }],
   }
   , 
