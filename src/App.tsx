@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Layout } from './Components/Layout';
 import { Header } from './Components/Header';
 import { Tabs } from './Components/Tabs';
@@ -39,11 +39,46 @@ export default function App() {
     const [Allmatches, setAllmatches] = useState<MatchResponse[]>([]);
     const [livematches, setLivematches] = useState<MatchResponse[]>([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'live' | 'all' | 'FIFA World Cup' | 'Premier League' | 'La Liga' | 'Serie A' | 'Bundesliga' | 'Ligue 1' | 'Eredivisie' | 'Campeonato Brasileiro Série A' | 'UEFA Champions League' | 'UEFA Europa League'>('all');
     const [session, setSession] = useState<Session | null>(null);
     const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
     const [searchResult, setSearchResult] = useState<SearchResult | null>(null);
+    const selectedDateRef = useRef(selectedDate);
+
+    useEffect(() => {
+        selectedDateRef.current = selectedDate;
+    }, [selectedDate]);
+
+    useEffect(() => {
+        const socket = new WebSocket(import.meta.env.VITE_WS_URL ?? 'ws://localhost:3000/ws');
+
+        socket.addEventListener('open', () => {
+            console.log('WebSocket connected');
+        });
+
+        socket.addEventListener('message', (event) => {
+            try {
+                const payload = JSON.parse(event.data);
+                console.log('WebSocket payload:', payload);
+
+                if (payload?.type === 'refresh') {
+                    handleDateChange(selectedDateRef.current, { showLoader: false });
+                }
+            } catch {
+                console.log('WebSocket message:', event.data);
+            }
+        });
+
+        socket.addEventListener('close', () => {
+            console.log('WebSocket disconnected');
+        });
+
+        return () => {
+            socket.close();
+        };
+    }, []);
 
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
@@ -57,20 +92,38 @@ export default function App() {
         return () => subscription.unsubscribe();
     }, []);
 
-    const handleDateChange = (date: string) => {
+    const handleDateChange = (date: string, options?: { showLoader?: boolean }) => {
+        const showLoader = options?.showLoader ?? true;
+
         setSelectedDate(date);
-        setLoading(true);
+
+        if (showLoader) {
+            setLoading(true);
+        } else {
+            setRefreshing(true);
+        }
+
         setError(null);
 
         getMatchesByDate(date)
             .then((res) => {
                 setAllmatches(res.data.matches);
                 setLivematches(res.data.matches.filter((match: any) => match.status === 'IN_PLAY' || match.status === 'LIVE' || match.status === 'PAUSED'));
-                setLoading(false);
+
+                if (showLoader) {
+                    setLoading(false);
+                } else {
+                    setRefreshing(false);
+                }
             })
             .catch(() => {
                 setError("Failed to fetch matches for that date");
-                setLoading(false);
+
+                if (showLoader) {
+                    setLoading(false);
+                } else {
+                    setRefreshing(false);
+                }
             });
     };
 
@@ -196,8 +249,8 @@ export default function App() {
                 <DateSlider selectedDate={selectedDate} onDateChange={handleDateChange} daysCount={150} />
 
                 <button
-                    onClick={() => getMatchesByDate(selectedDate)}
-                    disabled={loading}
+                    onClick={() => handleDateChange(selectedDate, { showLoader: false })}
+                    disabled={loading || refreshing}
                     style={refreshButtonStyle}
                     title="Refresh scores"
                 >
@@ -209,7 +262,7 @@ export default function App() {
                         .animate-spin-icon { animation: spin 1s linear infinite; }
                     `}</style>
                     <RefreshCw
-                        className={loading ? 'animate-spin-icon' : ''}
+                        className={loading || refreshing ? 'animate-spin-icon' : ''}
                         style={{ width: '20px', height: '20px' }}
                     />
                 </button>
@@ -227,7 +280,7 @@ export default function App() {
                         </p>
                     </div>
                     <button
-                        onClick={() => getMatchesByDate(selectedDate)}
+                        onClick={() => handleDateChange(selectedDate, { showLoader: false })}
                         style={{ marginTop: '8px', padding: '8px 16px', backgroundColor: '#22c55e', color: '#000', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
                     >
                         Try Again
