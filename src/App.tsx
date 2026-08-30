@@ -13,6 +13,7 @@ import { DateSlider } from './Components/dateslider';
 import type { Session } from '@supabase/supabase-js';
 import { SearchBar } from './Components/searchbar';
 import { SearchResults } from './Components/searchresults';
+import ChatBot from "./Components/Chatbot";
 
 interface Team {
     id: number;
@@ -169,9 +170,10 @@ export default function App() {
     }
 
     return (
+         <>
         <Layout>
             <Header />
-
+            
             <div style={userBarStyle}>
                 <span>{session.user.email}</span>
                 <button
@@ -186,6 +188,8 @@ export default function App() {
                 onSelectTeam={handleSelectTeam}
                 onSelectCompetition={handleSelectCompetition}
             />
+
+            
 
             <div style={controlBarStyle}>
                 <Tabs activeTab={activeTab} onTabChange={setActiveTab} />
@@ -239,12 +243,14 @@ export default function App() {
             ) : (
                 <MatchList matches={displayedMatches} />
             )}
-
+            
             <footer style={footerStyle}>
                 <p style={{ color: '#555', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 'bold', margin: 0 }}>
                     All rights reserved. SoccerrAI © 2026
                 </p>
             </footer>
         </Layout>
+        <ChatBot />
+        </>
     );
 }

@@ -4,6 +4,7 @@ import express from "express"
 import Router from './routes/match.routes'
 import predictionRouter from "./routes/predictionRoutes"
 import geminiRouter from "./routes/geminiRoutes"
+import chatRouter from "./routes/chat"
 import { CONFIG } from "./config/env"
 import dotenv from 'dotenv';
 
@@ -27,6 +28,7 @@ app.use((req, res, next) => {
 app.use('/api', Router);
 app.use("/api/groq", geminiRouter);
 app.use("/api/predict", predictionRouter);
+app.use("/api", chatRouter);
 app.listen(CONFIG.PORT, () => {
   console.log(`Server running on http://localhost:${CONFIG.PORT}`);
 });
