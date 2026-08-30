@@ -52,7 +52,7 @@ export default function App() {
     }, [selectedDate]);
 
     useEffect(() => {
-        const socket = new WebSocket(import.meta.env.VITE_WS_URL ?? 'ws://localhost:3000/ws');
+        const socket = new WebSocket(import.meta.env.VITE_API_BASE_URL ?? 'ws://localhost:3000/ws');
 
         socket.addEventListener('open', () => {
             console.log('WebSocket connected');
