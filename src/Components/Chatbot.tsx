@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import type { KeyboardEvent } from "react";
+import { Sparkles, X } from 'lucide-react';
 
 interface Message {
   role: "user" | "assistant";
@@ -214,7 +215,11 @@ export default function ChatBot() {
           marginLeft: "auto"
         }}
       >
-        {isOpen ? "✕" : "💬"}
+        {isOpen ? (
+  <X className="icon-close" />
+) : (
+  <Sparkles className="icon-shiny-ai" />
+)}
       </button>
     </div>
   );
