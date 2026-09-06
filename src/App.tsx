@@ -52,13 +52,19 @@ export default function App() {
     }, [selectedDate]);
 
     useEffect(() => {
-        const socket = new WebSocket(import.meta.env.VITE_API_BASE_URL ?? 'ws://localhost:3000/ws');
+        
+        const apiBaseUrl = import.meta.env.DEV
+            ? 'http://localhost:3000'
+            : import.meta.env.VITE_API_BASE_URL;
+        const wsBaseUrl = apiBaseUrl.replace(/^http/, 'ws').replace(/\/$/, '');
+        const ws = new WebSocket(`${wsBaseUrl}/ws`);
 
-        socket.addEventListener('open', () => {
+
+        ws.addEventListener('open', () => {
             console.log('WebSocket connected');
         });
 
-        socket.addEventListener('message', (event) => {
+        ws.addEventListener('message', (event) => {
             try {
                 const payload = JSON.parse(event.data);
                 console.log('WebSocket payload:', payload);
@@ -71,12 +77,12 @@ export default function App() {
             }
         });
 
-        socket.addEventListener('close', () => {
+        ws.addEventListener('close', () => {
             console.log('WebSocket disconnected');
         });
 
         return () => {
-            socket.close();
+            ws.close();
         };
     }, []);
 

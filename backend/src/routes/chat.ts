@@ -55,7 +55,7 @@ router.post("/chat", async (req: Request, res: Response) => {
       model: "qwen/qwen3.8-27b",
       messages: conversation,
       tools,
-      tool_choice: "auto"
+      tool_choice: "required"
     });
 
     let responseMessage = response.choices[0].message;
@@ -89,7 +89,7 @@ router.post("/chat", async (req: Request, res: Response) => {
         model: "qwen/qwen3.8-27b",
         messages: conversation,
         tools,
-        tool_choice: "auto"
+        tool_choice: "none"
       });
       responseMessage = response.choices[0].message;
       safetyCounter++;

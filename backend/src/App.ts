@@ -70,6 +70,8 @@ app.use('/api', Router);
 app.use("/api/groq", geminiRouter);
 app.use("/api/predict", predictionRouter);
 app.use("/api", chatRouter);
-server.listen(CONFIG.PORT, () => {
-  console.log(`Server running on http://localhost:${CONFIG.PORT}`);
+const port = Number(CONFIG.PORT) || 3000;
+
+server.listen(port, () => {
+  console.log(`Server running on port ${port}`);
 });
